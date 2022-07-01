@@ -1,76 +1,66 @@
-const {createStore, combineReducers, applyMiddleware} = require('redux');
-const { default: logger } = require('redux-logger');
+const { default: axios } = require('axios');
+const {createStore, applyMiddleware} = require('redux');
+const thunk = require("redux-thunk").default;
+
+//define constant
+const GET_TODOS_REQUEST = "GET_TODOS_REQUEST";
+const GET_TODOS_SUCCESS = "GET_TODOS_SUCCESS";
+const GET_TODOS_FAILED = "GET_TODOS_FAILED";
+const API_URL = "https://jsonplaceholder.typicode.com/todos";
 
 
-
-//product const
-const GET_PRODUCTS = "GET_PRODUCTS";
-const ADD_PRODUCTS = "ADD_PRODUCTS";
-
-//cart const
-const GET_CART_ITEM = "GET_CART_ITEM";
-const ADD_CART_ITEM = "ADD_CART_ITEM";
-
-
-//product initial state
-const initialProductState = {
-  products: ["sugar", "salt"],
-  numberOfProducts: 2
+// states initialize
+const initialTodosState = {
+  todos: [],
+  isLoading: false,
+  error: null
 }
 
-
-//cart initial state
-const initialCartState = {
-  carts: ["shirt", "pent"],
-  numberOfCarts: 2
-}
-
-
-//product action
-const getProducts = () => {
+//action
+const getTodosRequest = () => {
   return {
-    type: GET_PRODUCTS
-  }
-}
+    type: GET_TODOS_REQUEST,
+  };
+};
 
-
-const addProducts = (proudct) => {
+const getTodosFailed = (error) => {
   return {
-    type: ADD_PRODUCTS,
-    payload: proudct
-  }
-}
+    type: GET_TODOS_FAILED,
+    payload: error
+  };
+};
 
-
-//cart action
-const getCartItem = () => {
+const getTodosSuccess = (todos) => {
   return {
-    type: GET_CART_ITEM
-  }
-}
+    type: GET_TODOS_SUCCESS,
+    payload: todos
+  };
+};
 
 
-const addCartItem = (item) => {
-  return {
-    type: ADD_CART_ITEM,
-    payload: item
-  }
-}
-
-//product reducer
-const productReducer = (state = initialProductState, action) => {
+//reducer
+const todosReducer = (state = initialTodosState, action) => {
   switch (action.type) {
-    case GET_PRODUCTS:
+    case GET_TODOS_REQUEST:
       return {
-        ...state
+        ...state,
+        isLoading: true,
       }
       break;
     
-    case ADD_PRODUCTS:
+    case GET_TODOS_SUCCESS:
       return {
-        products: [...state.products, action.payload],
-        numberOfProducts: state.numberOfProducts + 1
-
+        ...state,
+        isLoading: false,
+        todos: action.payload
+      }
+      break;
+    
+    case GET_TODOS_FAILED:
+      return {
+        ...state,
+        isLoading: false,
+        error: action.payload
       }
       break;
   
@@ -80,45 +70,31 @@ const productReducer = (state = initialProductState, action) => {
 }
 
 
-//cart reducer
-const cartReducer = (state = initialCartState, action) => {
-  switch (action.type) {
-    case GET_CART_ITEM:
-      return {
-        ...state
-      }
-      break;
-    
-    case ADD_CART_ITEM:
-      return {
-        carts: [...state.carts, action.payload],
-        numberOfCarts: state.numberOfCarts + 1
-      }
-      break;
-  
-    default:
-      return state;
-  }
-}
-
-//combine all reducer
-const rootReducer = combineReducers({
-  productR: productReducer,
-  cartR: cartReducer
-})
+//async action creator
+const fetchData = () => {
+  return (dispatch) => {
+    dispatch(getTodosRequest());
+    axios
+      .get(API_URL)
+      .then((res) => {
+        const todos = res.data;
+        const titles = todos.map((todo) => todo.title);
+        dispatch(getTodosSuccess(titles));
+      })
+      .catch((error) => {
+        const errorMessage = error.message;
+        dispatch(getTodosFailed(errorMessage));
+      });
+  };
+};
 
 
-//create store
-const store = createStore(rootReducer, applyMiddleware(logger));
+//store
+const store = createStore(todosReducer, applyMiddleware(thunk));
 
-//subscribe to store
+//subscribe
 store.subscribe(() => {
   console.log(store.getState());
 });
 
-//call dispatch
-store.dispatch(getProducts());
-store.dispatch(addProducts("rice"));
-
-store.dispatch(getCartItem());
-store.dispatch(addCartItem("t-shirt"));
+store.dispatch(fetchData());
