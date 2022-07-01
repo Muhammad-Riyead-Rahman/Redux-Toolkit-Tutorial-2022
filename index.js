@@ -1,4 +1,5 @@
-const {createStore, combineReducers} = require('redux');
+const {createStore, combineReducers, applyMiddleware} = require('redux');
+const { default: logger } = require('redux-logger');
 
 
 
@@ -108,7 +109,7 @@ const rootReducer = combineReducers({
 
 
 //create store
-const store = createStore(rootReducer);
+const store = createStore(rootReducer, applyMiddleware(logger));
 
 //subscribe to store
 store.subscribe(() => {
