@@ -1,118 +1,123 @@
+const {createStore, combineReducers} = require('redux');
 
-const {createStore} = require('redux');
 
-//Defining constant
-const INCREMENT = "INCREMENT";
-const DECREMENT = "DECREMENT";
-const RESET = "RESET";
-const INCREMENT_COUNTER_BY_PAYLOAD = "INCREMENT_COUNTER_BY_PAYLOAD";
-const INCREMENT_USER = "INCREMENT_USER";
 
-//Defining state
-const initialCounterState = {
-  count: 0,
-  users: ["Riyead"]
-};
+//product const
+const GET_PRODUCTS = "GET_PRODUCTS";
+const ADD_PRODUCTS = "ADD_PRODUCTS";
 
-//Create action (Action are object type, that are two things - type, payload)
+//cart const
+const GET_CART_ITEM = "GET_CART_ITEM";
+const ADD_CART_ITEM = "ADD_CART_ITEM";
 
-//Increment counter
-const incrementCounterAction = () => {
+
+//product initial state
+const initialProductState = {
+  products: ["sugar", "salt"],
+  numberOfProducts: 2
+}
+
+
+//cart initial state
+const initialCartState = {
+  carts: ["shirt", "pent"],
+  numberOfCarts: 2
+}
+
+
+//product action
+const getProducts = () => {
   return {
-    type: "INCREMENT",
-  };
-};
-
-//Decrement counter
-const decrementCounterAction = () => {
-  return {
-    type: DECREMENT
+    type: GET_PRODUCTS
   }
 }
 
-//Reset counter
-const resetCounterAction = () => {
-  return {
-    type: RESET
-  }
-} 
 
-//Increment counter by payload
-const incrementCounterByPaloadAction = (value) => {
+const addProducts = (proudct) => {
   return {
-    type: INCREMENT_COUNTER_BY_PAYLOAD,
-    payload: value
+    type: ADD_PRODUCTS,
+    payload: proudct
   }
 }
 
-//Increment user
-const incrementUserAction = (user) => {
+
+//cart action
+const getCartItem = () => {
   return {
-    type: INCREMENT_USER,
-    payload: user
+    type: GET_CART_ITEM
   }
 }
 
-//Create reducer for counter
-const counterReducer = (state = initialCounterState, action) => {
+
+const addCartItem = (item) => {
+  return {
+    type: ADD_CART_ITEM,
+    payload: item
+  }
+}
+
+//product reducer
+const productReducer = (state = initialProductState, action) => {
   switch (action.type) {
-    case INCREMENT:
+    case GET_PRODUCTS:
       return {
-        ...state,
-        count: state.count + 1
+        ...state
       }
-      
       break;
     
-    case DECREMENT:
+    case ADD_PRODUCTS:
       return {
-        ...state,
-        count: state.count - 1
-      }
-    
-      break;
-    
-    case RESET:
-      return {
-        ...state,
-        count: 0
-      }
-    
-      break;
-    
-    case INCREMENT_COUNTER_BY_PAYLOAD:
-      return {
-        ...state,
-        count: state.count + action.payload
-      }
-    
-      break;
-    
-    case INCREMENT_USER:
-      return {
-        ...state,
-        users: [...state.users, action.payload]
+        products: [...state.products, action.payload],
+        numberOfProducts: state.numberOfProducts + 1
+
       }
       break;
   
     default:
-      state;
+      return state;
   }
 }
 
 
-//create store - getState(), dispatch(), subscribe()
-const store = createStore(counterReducer);
+//cart reducer
+const cartReducer = (state = initialCartState, action) => {
+  switch (action.type) {
+    case GET_CART_ITEM:
+      return {
+        ...state
+      }
+      break;
+    
+    case ADD_CART_ITEM:
+      return {
+        carts: [...state.carts, action.payload],
+        numberOfCarts: state.numberOfCarts + 1
+      }
+      break;
+  
+    default:
+      return state;
+  }
+}
 
+//combine all reducer
+const rootReducer = combineReducers({
+  productR: productReducer,
+  cartR: cartReducer
+})
+
+
+//create store
+const store = createStore(rootReducer);
+
+//subscribe to store
 store.subscribe(() => {
   console.log(store.getState());
 });
 
+//call dispatch
+store.dispatch(getProducts());
+store.dispatch(addProducts("rice"));
 
-//dispatch action
-store.dispatch(incrementCounterAction());
-store.dispatch(decrementCounterAction());
-store.dispatch(decrementCounterAction());
-store.dispatch(resetCounterAction());
-store.dispatch(incrementCounterByPaloadAction(5));
-store.dispatch(incrementUserAction(" Harun"));
+store.dispatch(getCartItem());
+store.dispatch(addCartItem("t-shirt"));
