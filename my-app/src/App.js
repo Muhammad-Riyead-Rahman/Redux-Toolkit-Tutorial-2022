@@ -1,12 +1,11 @@
-
 import './App.css';
-import Todos from './components/Todos';
+import CounterView from "./features/counter/CounterView";
 
 function App() {
   return (
     <div className="App">
       <h1>Welcome to react-redux</h1>
-      <Todos />
+      <CounterView />
     </div>
   );
 }
